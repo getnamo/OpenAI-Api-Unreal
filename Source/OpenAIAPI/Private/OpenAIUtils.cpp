@@ -12,10 +12,22 @@ void UOpenAIUtils::setOpenAIApiKey(FString apiKey)
 	mod._apiKey = apiKey;
 }
 
+void UOpenAIUtils::SetOpenAIAPIEndpoint(FString Url)
+{
+	FOpenAIAPIModule& mod = FModuleManager::Get().LoadModuleChecked<FOpenAIAPIModule>("OpenAIAPI");
+	mod.ApiUrl = Url;
+}
+
 FString UOpenAIUtils::getApiKey()
 {
 	FOpenAIAPIModule& mod = FModuleManager::Get().LoadModuleChecked<FOpenAIAPIModule>("OpenAIAPI");
 	return mod._apiKey;
+}
+
+FString UOpenAIUtils::GetApiURL()
+{
+	FOpenAIAPIModule& mod = FModuleManager::Get().LoadModuleChecked<FOpenAIAPIModule>("OpenAIAPI");
+	return mod.ApiUrl;
 }
 
 void UOpenAIUtils::	setUseOpenAIApiKeyFromEnvironmentVars(bool bUseEnvVariable)

@@ -15,5 +15,6 @@ public:
 
 private:
 	FString _apiKey = "";
+	FString ApiUrl = TEXT("https://api.openai.com/v1/chat/completions");	//default openai endpoint
 	bool _useApiKeyFromEnvVariable = false;
 };
