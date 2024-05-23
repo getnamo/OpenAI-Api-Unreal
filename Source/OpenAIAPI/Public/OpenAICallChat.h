@@ -30,7 +30,7 @@ public:
 private:
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "OpenAI")
-		static UOpenAICallChat* OpenAICallChat(FChatSettings ChatSettings);
+	static UOpenAICallChat* OpenAICallChat(FChatSettings ChatSettings);
 
 	virtual void Activate() override;
 	void OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool WasSuccessful);

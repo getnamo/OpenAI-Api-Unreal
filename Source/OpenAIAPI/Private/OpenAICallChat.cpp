@@ -40,20 +40,23 @@ void UOpenAICallChat::Activate()
 	
 		auto HttpRequest = FHttpModule::Get().CreateRequest();
 
-		FString apiMethod;
+		FString ApiModelName;
 		switch (ChatSettings.model)
 		{
 		case EOAChatEngineType::GPT_3_5_TURBO:
-			apiMethod = "gpt-3.5-turbo";
+			ApiModelName = "gpt-3.5-turbo";
 			break;
 		case EOAChatEngineType::GPT_4:
-			apiMethod = "gpt-4";
+			ApiModelName = "gpt-4";
 			break;
 		case EOAChatEngineType::GPT_4_32k:
-			apiMethod = "gpt-4-32k";
+			ApiModelName = "gpt-4-32k";
 			break;
-			case EOAChatEngineType::GPT_4_TURBO:
-				apiMethod = "gpt-4-0125-preview";
+		case EOAChatEngineType::GPT_4_TURBO:
+			ApiModelName = "gpt-4-0125-preview";
+			break;
+		case EOAChatEngineType::CUSTOM:
+			ApiModelName = ChatSettings.customModelName;
 			break;
 		}
 		
@@ -71,8 +74,9 @@ void UOpenAICallChat::Activate()
 
 		//build payload
 		TSharedPtr<FJsonObject> PayloadObject = MakeShareable(new FJsonObject());
-		PayloadObject->SetStringField(TEXT("model"), apiMethod);
+		PayloadObject->SetStringField(TEXT("model"), ApiModelName);
 		PayloadObject->SetNumberField(TEXT("max_tokens"), ChatSettings.maxTokens);
+		PayloadObject->SetBoolField(TEXT("stream"), ChatSettings.stream);
 
 		
 		// convert role enum to model string

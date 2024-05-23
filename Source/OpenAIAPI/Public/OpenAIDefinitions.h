@@ -226,12 +226,19 @@ struct FChatSettings
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "OpenAI")
 	EOAChatEngineType model = EOAChatEngineType::GPT_4;
+
+	//If you use custom model type
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "OpenAI")
+	FString customModelName = TEXT("");
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "OpenAI")
 	TArray<FChatLog> messages;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "OpenAI")
 	float temperature = 1.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "OpenAI")
+	bool stream = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "OpenAI")
 	int32 maxTokens = 250;
