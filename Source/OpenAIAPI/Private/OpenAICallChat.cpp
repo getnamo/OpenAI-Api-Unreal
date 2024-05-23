@@ -38,7 +38,7 @@ void UOpenAICallChat::Activate()
 	}	else
 	{
 	
-		auto HttpRequest = FHttpModule::Get().CreateRequest();
+		TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
 
 		FString ApiModelName;
 		switch (ChatSettings.model)
@@ -118,6 +118,21 @@ void UOpenAICallChat::Activate()
 		if (HttpRequest->ProcessRequest())
 		{
 			HttpRequest->OnProcessRequestComplete().BindUObject(this, &UOpenAICallChat::OnResponse);
+
+			if (ChatSettings.stream)
+			{
+				HttpRequest->OnRequestProgress().BindLambda([this](FHttpRequestPtr HttpRequest, int32 BytesSend, int32 InBytesReceived)
+				{
+					FHttpResponsePtr HttpResponse = HttpRequest->GetResponse();
+
+					if (HttpResponse.IsValid())
+					{
+						FString Content = *HttpResponse->GetContentAsString();
+
+						UE_LOG(LogTemp, Log, TEXT("Stream res: <%s>"), *Content);
+					}
+				});
+			}
 		}
 		else
 		{
