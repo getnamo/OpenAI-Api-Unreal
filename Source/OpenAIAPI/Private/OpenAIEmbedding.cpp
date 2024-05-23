@@ -38,10 +38,10 @@ void UOpenAIEmbedding::StartEmbedding()
     UE_LOG(LogEmbedding, Log, TEXT("UOpenAIEmbedding StartEmbedding"));
 
     FString _apiKey;
-    if (UOpenAIUtils::getUseApiKeyFromEnvironmentVars())
+    if (UOpenAIUtils::GetUseApiKeyFromEnvironmentVars())
         _apiKey = UOpenAIUtils::GetEnvironmentVariable(TEXT("OPENAI_API_KEY"));
     else
-        _apiKey = UOpenAIUtils::getApiKey();
+        _apiKey = UOpenAIUtils::GetApiKey();
 
     if (_apiKey.IsEmpty())
 	{
@@ -139,7 +139,7 @@ void UOpenAIEmbedding::OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Resp
 
 		if (FJsonSerializer::Deserialize(Reader, JsonResponse) && JsonResponse.IsValid())
 		{
-			TArray<float> EmbeddingVector;
+			TArray<float> embeddingVector;
 			const TArray<TSharedPtr<FJsonValue>>* DataArray;
 			if (JsonResponse->TryGetArrayField(TEXT("data"), DataArray))
 			{
@@ -151,13 +151,13 @@ void UOpenAIEmbedding::OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Resp
 					{
 						for (const TSharedPtr<FJsonValue>& EmbeddingValue : *EmbeddingsArray)
 						{
-							EmbeddingVector.Add(static_cast<float>(EmbeddingValue->AsNumber()));
+							embeddingVector.Add(static_cast<float>(EmbeddingValue->AsNumber()));
 						}
 					}
 				}
 			}
 
-			FEmbeddingResult Result{EmbeddingVector};
+			FEmbeddingResult Result{embeddingVector};
 			OnResponseReceived.ExecuteIfBound(Result, TEXT(""), true);
 			OnResponseReceivedF.ExecuteIfBound(Result, TEXT(""), true);
 		}

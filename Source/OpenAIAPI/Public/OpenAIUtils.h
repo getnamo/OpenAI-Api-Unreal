@@ -35,21 +35,21 @@ class OPENAIAPI_API UOpenAIUtils : public UBlueprintFunctionLibrary
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "OpenAI")
-	static void setOpenAIApiKey(FString apiKey);
+	static void SetOpenAIApiKey(FString ApiKey);
 
 	UFUNCTION(BlueprintCallable, Category = "OpenAI")
 	static void SetOpenAIAPIEndpoint(FString Url);
 	
-	static FString getApiKey();
+	static FString GetApiKey();
 
 	static FString GetApiURL();
 
 	UFUNCTION(BlueprintCallable, Category = "OpenAI")
-	static void setUseOpenAIApiKeyFromEnvironmentVars(bool bUseEnvVariable);
+	static void SetUseOpenAIApiKeyFromEnvironmentVars(bool bUseEnvVariable);
 
-	static bool getUseApiKeyFromEnvironmentVars();
+	static bool GetUseApiKeyFromEnvironmentVars();
 
-	static FString GetEnvironmentVariable(FString key);
+	static FString GetEnvironmentVariable(FString Key);
 	
 public:
 	UFUNCTION(BlueprintCallable, Category = "OpenAI")

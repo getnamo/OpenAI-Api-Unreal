@@ -19,20 +19,20 @@ UOpenAICallChat::~UOpenAICallChat()
 UOpenAICallChat* UOpenAICallChat::OpenAICallChat(FChatSettings chatSettingsInput)
 {
 	UOpenAICallChat* BPNode = NewObject<UOpenAICallChat>();
-	BPNode->chatSettings = chatSettingsInput;
+	BPNode->ChatSettings = chatSettingsInput;
 	return BPNode;
 }
 
 void UOpenAICallChat::Activate()
 {
-	FString _apiKey;
-	if (UOpenAIUtils::getUseApiKeyFromEnvironmentVars())
-		_apiKey = UOpenAIUtils::GetEnvironmentVariable(TEXT("OPENAI_API_KEY"));
+	FString ApiKey;
+	if (UOpenAIUtils::GetUseApiKeyFromEnvironmentVars())
+		ApiKey = UOpenAIUtils::GetEnvironmentVariable(TEXT("OPENAI_API_KEY"));
 	else
-		_apiKey = UOpenAIUtils::getApiKey();
+		ApiKey = UOpenAIUtils::GetApiKey();
 	
 	// checking parameters are valid
-	if (_apiKey.IsEmpty())
+	if (ApiKey.IsEmpty())
 	{
 		Finished.Broadcast({}, TEXT("Api key is not set"), false);
 	}	else
@@ -41,7 +41,7 @@ void UOpenAICallChat::Activate()
 		auto HttpRequest = FHttpModule::Get().CreateRequest();
 
 		FString apiMethod;
-		switch (chatSettings.model)
+		switch (ChatSettings.model)
 		{
 		case EOAChatEngineType::GPT_3_5_TURBO:
 			apiMethod = "gpt-3.5-turbo";
@@ -60,30 +60,30 @@ void UOpenAICallChat::Activate()
 		//TODO: add aditional params to match the ones listed in the curl response in: https://platform.openai.com/docs/api-reference/making-requests
 	
 		// convert parameters to strings
-		FString tempHeader = "Bearer ";
-		tempHeader += _apiKey;
+		FString TempHeader = "Bearer ";
+		TempHeader += ApiKey;
 
 		// set headers
-		FString url = UOpenAIUtils::GetApiURL();
-		HttpRequest->SetURL(url);
+		FString Url = UOpenAIUtils::GetApiURL();
+		HttpRequest->SetURL(Url);
 		HttpRequest->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
-		HttpRequest->SetHeader(TEXT("Authorization"), tempHeader);
+		HttpRequest->SetHeader(TEXT("Authorization"), TempHeader);
 
 		//build payload
-		TSharedPtr<FJsonObject> _payloadObject = MakeShareable(new FJsonObject());
-		_payloadObject->SetStringField(TEXT("model"), apiMethod);
-		_payloadObject->SetNumberField(TEXT("max_tokens"), chatSettings.maxTokens);
+		TSharedPtr<FJsonObject> PayloadObject = MakeShareable(new FJsonObject());
+		PayloadObject->SetStringField(TEXT("model"), apiMethod);
+		PayloadObject->SetNumberField(TEXT("max_tokens"), ChatSettings.maxTokens);
 
 		
 		// convert role enum to model string
-		if (!(chatSettings.messages.Num() == 0))
+		if (!(ChatSettings.messages.Num() == 0))
 		{
 			TArray<TSharedPtr<FJsonValue>> Messages;
 			FString role;
-			for (int i = 0; i < chatSettings.messages.Num(); i++)
+			for (int i = 0; i < ChatSettings.messages.Num(); i++)
 			{
 				TSharedPtr<FJsonObject> Message = MakeShareable(new FJsonObject());
-				switch (chatSettings.messages[i].role)
+				switch (ChatSettings.messages[i].role)
 				{
 				case EOAChatRole::USER:
 					role = "user";
@@ -96,20 +96,20 @@ void UOpenAICallChat::Activate()
 					break;
 				}
 				Message->SetStringField(TEXT("role"), role);
-				Message->SetStringField(TEXT("content"), chatSettings.messages[i].content);
+				Message->SetStringField(TEXT("content"), ChatSettings.messages[i].content);
 				Messages.Add(MakeShareable(new FJsonValueObject(Message)));
 			}
-			_payloadObject->SetArrayField(TEXT("messages"), Messages);
+			PayloadObject->SetArrayField(TEXT("messages"), Messages);
 		}
 
 		// convert payload to string
-		FString _payload;
-		TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&_payload);
-		FJsonSerializer::Serialize(_payloadObject.ToSharedRef(), Writer);
+		FString Payload;
+		TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Payload);
+		FJsonSerializer::Serialize(PayloadObject.ToSharedRef(), Writer);
 
 		// commit request
 		HttpRequest->SetVerb(TEXT("POST"));
-		HttpRequest->SetContentAsString(_payload);
+		HttpRequest->SetContentAsString(Payload);
 
 		if (HttpRequest->ProcessRequest())
 		{
@@ -136,23 +136,23 @@ void UOpenAICallChat::OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Respo
 		return;
 	}
 
-	TSharedPtr<FJsonObject> responseObject;
-	TSharedRef<TJsonReader<>> reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
-	if (FJsonSerializer::Deserialize(reader, responseObject))
+	TSharedPtr<FJsonObject> ResponseObject;
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+	if (FJsonSerializer::Deserialize(Reader, ResponseObject))
 	{
-		bool err = responseObject->HasField("error");
+		bool Err = ResponseObject->HasField("error");
 
-		if (err)
+		if (Err)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("%s"), *Response->GetContentAsString());
 			Finished.Broadcast({}, TEXT("Api error"), false);
 			return;
 		}
 
-		OpenAIParser parser(chatSettings);
-		FChatCompletion _out = parser.ParseChatCompletion(*responseObject);
+		OpenAIParser parser(ChatSettings);
+		FChatCompletion Out = parser.ParseChatCompletion(*ResponseObject);
 
-		Finished.Broadcast(_out, "", true);
+		Finished.Broadcast(Out, "", true);
 	}
 }
 

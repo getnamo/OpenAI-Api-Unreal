@@ -6,7 +6,7 @@
 #include "OpenAIAPI.h"
 #include "Modules/ModuleManager.h"
 
-void UOpenAIUtils::setOpenAIApiKey(FString apiKey)
+void UOpenAIUtils::SetOpenAIApiKey(FString apiKey)
 {
 	FOpenAIAPIModule& mod = FModuleManager::Get().LoadModuleChecked<FOpenAIAPIModule>("OpenAIAPI");
 	mod._apiKey = apiKey;
@@ -18,7 +18,7 @@ void UOpenAIUtils::SetOpenAIAPIEndpoint(FString Url)
 	mod.ApiUrl = Url;
 }
 
-FString UOpenAIUtils::getApiKey()
+FString UOpenAIUtils::GetApiKey()
 {
 	FOpenAIAPIModule& mod = FModuleManager::Get().LoadModuleChecked<FOpenAIAPIModule>("OpenAIAPI");
 	return mod._apiKey;
@@ -30,13 +30,13 @@ FString UOpenAIUtils::GetApiURL()
 	return mod.ApiUrl;
 }
 
-void UOpenAIUtils::	setUseOpenAIApiKeyFromEnvironmentVars(bool bUseEnvVariable)
+void UOpenAIUtils::	SetUseOpenAIApiKeyFromEnvironmentVars(bool bUseEnvVariable)
 {
 	FOpenAIAPIModule& mod = FModuleManager::Get().LoadModuleChecked<FOpenAIAPIModule>("OpenAIAPI");
 	mod._useApiKeyFromEnvVariable = bUseEnvVariable;
 }
 
-bool UOpenAIUtils::getUseApiKeyFromEnvironmentVars()
+bool UOpenAIUtils::GetUseApiKeyFromEnvironmentVars()
 {
 
 	FOpenAIAPIModule& mod = FModuleManager::Get().LoadModuleChecked<FOpenAIAPIModule>("OpenAIAPI");

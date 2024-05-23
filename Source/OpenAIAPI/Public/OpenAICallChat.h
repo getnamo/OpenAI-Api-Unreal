@@ -22,7 +22,7 @@ public:
 	UOpenAICallChat();
 	~UOpenAICallChat();
 
-	FChatSettings chatSettings;
+	FChatSettings ChatSettings;
 
 	UPROPERTY(BlueprintAssignable, Category = "OpenAI")
 	FOnResponseRecievedPin Finished;
@@ -30,7 +30,7 @@ public:
 private:
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "OpenAI")
-		static UOpenAICallChat* OpenAICallChat(FChatSettings chatSettings);
+		static UOpenAICallChat* OpenAICallChat(FChatSettings ChatSettings);
 
 	virtual void Activate() override;
 	void OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool WasSuccessful);

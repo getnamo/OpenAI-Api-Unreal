@@ -30,10 +30,10 @@ UOpenAICallDALLE* UOpenAICallDALLE::OpenAICallDALLE(EOAImageSize imageSizeInput,
 void UOpenAICallDALLE::Activate()
 {
 	FString _apiKey;
-	if (UOpenAIUtils::getUseApiKeyFromEnvironmentVars())
+	if (UOpenAIUtils::GetUseApiKeyFromEnvironmentVars())
 		_apiKey = UOpenAIUtils::GetEnvironmentVariable(TEXT("OPENAI_API_KEY"));
 	else
-		_apiKey = UOpenAIUtils::getApiKey();
+		_apiKey = UOpenAIUtils::GetApiKey();
 
 
 	// checking parameters are valid

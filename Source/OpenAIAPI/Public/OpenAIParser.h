@@ -23,7 +23,7 @@ public:
 
 	FCompletionSettings completionSettings;
 	
-	FChatSettings chatSettings;
+	FChatSettings ChatSettings;
 	FSpeechSettings speechSettings;
 
 	FCompletion ParseCompletionsResponse(const FJsonObject&);

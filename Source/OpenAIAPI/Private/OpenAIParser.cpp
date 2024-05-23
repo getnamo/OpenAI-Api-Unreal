@@ -12,7 +12,7 @@ OpenAIParser::OpenAIParser(const FCompletionSettings& settings)
 }
 
 OpenAIParser::OpenAIParser(const FChatSettings& settings)
-	: chatSettings(settings)
+	: ChatSettings(settings)
 {
 }
 
