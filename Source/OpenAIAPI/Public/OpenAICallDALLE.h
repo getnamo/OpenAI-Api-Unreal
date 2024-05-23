@@ -28,13 +28,13 @@ public:
 	FCompletionSettings settings;
 
 	UPROPERTY(BlueprintAssignable, Category = "OpenAI")
-		FOnDalleResponseRecievedPin Finished;
+	FOnDalleResponseRecievedPin Finished;
 
 private:
 	OpenAIValueMapping mapping;
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "OpenAI")
-		static UOpenAICallDALLE* OpenAICallDALLE(EOAImageSize imageSize, FString prompt, int32 numImages);
+	static UOpenAICallDALLE* OpenAICallDALLE(EOAImageSize imageSize, FString prompt, int32 numImages);
 
 	virtual void Activate() override;
 	void OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool WasSuccessful);

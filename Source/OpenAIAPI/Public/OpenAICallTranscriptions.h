@@ -30,7 +30,7 @@ public:
 private:
 	
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "OpenAI")
-		static UOpenAICallTranscriptions* OpenAICallTranscriptions(FString fileName);
+	static UOpenAICallTranscriptions* OpenAICallTranscriptions(FString fileName);
 
 	virtual void Activate() override;
 	void OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool WasSuccessful);

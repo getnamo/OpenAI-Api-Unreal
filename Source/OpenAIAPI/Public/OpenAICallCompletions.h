@@ -33,7 +33,7 @@ private:
 	OpenAIValueMapping mapping;
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "OpenAI", meta=(DeprecatedFunction, DeprecationMessage="Function has been deprecated, Please use OpenAICallChat instead"))
-		static UOpenAICallCompletions* OpenAICallCompletions(EOACompletionsEngineType engine, FString prompt, FCompletionSettings settings);
+	static UOpenAICallCompletions* OpenAICallCompletions(EOACompletionsEngineType engine, FString prompt, FCompletionSettings settings);
 
 	virtual void Activate() override;
 	void OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool WasSuccessful);
