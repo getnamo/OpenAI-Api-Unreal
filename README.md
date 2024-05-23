@@ -3,6 +3,10 @@ The **OpenAIApi Plugin** gives you access to the **OpenAI API** in **Unreal Engi
 
 This is a community Plugin. No affiliation with OpenAI
 
+## Getnamo Fork notes
+
+This fork add modifications to support locally running LLMs with OpenAI api compatible endpoints.
+
 ## Installation
 
 The recommended way to install the plugin is to use pre-built binaries.
