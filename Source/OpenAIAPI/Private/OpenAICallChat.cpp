@@ -16,10 +16,10 @@ UOpenAICallChat::~UOpenAICallChat()
 {
 }
 
-UOpenAICallChat* UOpenAICallChat::OpenAICallChat(FChatSettings chatSettingsInput)
+UOpenAICallChat* UOpenAICallChat::OpenAICallChat(FChatSettings ChatSettingsInput)
 {
 	UOpenAICallChat* BPNode = NewObject<UOpenAICallChat>();
-	BPNode->ChatSettings = chatSettingsInput;
+	BPNode->ChatSettings = ChatSettingsInput;
 	return BPNode;
 }
 
@@ -129,7 +129,40 @@ void UOpenAICallChat::Activate()
 					{
 						FString Content = *HttpResponse->GetContentAsString();
 
-						UE_LOG(LogTemp, Log, TEXT("Stream res: <%s>"), *Content);
+						//NB: this has some performance implications because it processes all chunks for every delta received.
+						//Todo: process only last string...
+						TArray<TSharedPtr<FJsonObject>> JsonChunks = ProcessStreamChunkString(Content);
+
+						if (!JsonChunks.IsEmpty() && Streaming.IsBound())
+						{
+							auto Chunk = JsonChunks.Last();
+							auto Choices = Chunk->GetArrayField(TEXT("choices"));
+							if (Choices.Num() > 0)
+							{
+								FChatLog ChatDelta;
+
+								auto Delta = Choices[0]->AsObject()->GetObjectField(TEXT("delta"));
+								const FString RoleString = Delta->GetStringField(TEXT("role"));
+								if (RoleString.Equals(TEXT("assistant")))
+								{
+									ChatDelta.role = EOAChatRole::ASSISTANT;
+								}
+								else if (RoleString.Equals(TEXT("user")))
+								{
+									ChatDelta.role = EOAChatRole::USER;
+								}
+								else
+								{
+									ChatDelta.role = EOAChatRole::SYSTEM;
+								}
+								ChatDelta.content = Delta->GetStringField(TEXT("content"));
+
+								FChatCompletion Completion;
+								Completion.message = ChatDelta;
+
+								Streaming.Broadcast(Completion,"", true);
+							}
+						}
 					}
 				});
 			}
@@ -173,5 +206,61 @@ void UOpenAICallChat::OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Respo
 
 		Finished.Broadcast(Out, "", true);
 	}
+}
+
+TArray<TSharedPtr<FJsonObject>> UOpenAICallChat::ProcessStreamChunkString(const FString& Chunk)
+{
+	TArray<TSharedPtr<FJsonObject>> JsonChunks;
+
+	TArray<FString> Lines;
+	Chunk.ParseIntoArrayLines(Lines);
+
+	for (const FString& Line : Lines)
+	{
+		//ignore pings
+		if (!Line.StartsWith(TEXT("data:")))
+		{
+			continue;
+		}
+		const FString& Parsed = Line.Replace(TEXT("data: "), TEXT("")).TrimStartAndEnd();
+
+		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Parsed);
+
+		TSharedPtr<FJsonObject> Object;
+
+		// Deserialize the JSON string into the JSON object
+		FJsonSerializer::Deserialize(Reader, Object);		
+
+		// Log the processed string
+		JsonChunks.Add(Object);
+	}
+
+	return JsonChunks;
+}
+
+TSharedPtr<FJsonObject> UOpenAICallChat::ProcessLastChunkStringFromStream(const FString& Chunk)
+{
+	TSharedPtr<FJsonObject> DeltaJson;
+
+	TArray<FString> Lines;
+	Chunk.ParseIntoArrayLines(Lines);
+
+	if (Lines.Num() > 0)
+	{
+		const FString& Line = Lines.Last();
+
+		if (!Line.StartsWith(TEXT("data:")))
+		{
+			DeltaJson;
+		}
+		const FString& Parsed = Line.Replace(TEXT("data: "), TEXT("")).TrimStartAndEnd();
+
+		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Parsed);
+
+		// Deserialize the JSON string into the JSON object
+		FJsonSerializer::Deserialize(Reader, DeltaJson);
+	}
+
+	return DeltaJson;
 }
 

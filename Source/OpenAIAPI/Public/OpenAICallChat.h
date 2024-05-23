@@ -8,7 +8,11 @@
 #include "HttpModule.h"
 #include "OpenAICallChat.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnResponseRecievedPin, const FChatCompletion, message, const FString&, errorMessage, bool, Success);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnResponseRecievedPin, const FChatCompletion, Message, const FString&, ErrorMessage, bool, Success);
+
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStreamChunkRecievedPin, const FChatLog, Delta);
+
+
 /**
  * 
  */
@@ -27,6 +31,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "OpenAI")
 	FOnResponseRecievedPin Finished;
 
+	UPROPERTY(BlueprintAssignable, Category = "OpenAI")
+	FOnResponseRecievedPin Streaming;
+
 private:
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "OpenAI")
@@ -34,5 +41,7 @@ private:
 
 	virtual void Activate() override;
 	void OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool WasSuccessful);
-	
+
+	TArray<TSharedPtr<FJsonObject>> ProcessStreamChunkString(const FString& Chunk);
+	TSharedPtr<FJsonObject> ProcessLastChunkStringFromStream(const FString& Chunk);
 };
