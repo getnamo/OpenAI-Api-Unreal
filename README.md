@@ -5,7 +5,7 @@ This is a community Plugin. No affiliation with OpenAI
 
 ## Getnamo Fork notes
 
-This fork add modifications to support locally running LLMs with OpenAI api compatible endpoints.
+This fork add modifications to support locally running LLMs with OpenAI api compatible endpoints. Use `SetOpenAIAPIEndpoint` function before calling other functions to use that endpoint URL instead of the default OpenAI one.
 
 ## Installation
 
