@@ -7,6 +7,8 @@ This is a community Plugin. No affiliation with OpenAI
 
 This fork add modifications to support locally running LLMs with OpenAI api compatible endpoints. Use `SetOpenAIAPIEndpoint` function before calling other functions to use that endpoint URL instead of the default OpenAI one.
 
+Also adds streaming implementation for ChatAPI allowing per-token update instead of waiting for full text.
+
 ## Installation
 
 The recommended way to install the plugin is to use pre-built binaries.
