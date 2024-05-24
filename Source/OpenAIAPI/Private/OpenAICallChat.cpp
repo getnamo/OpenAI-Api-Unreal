@@ -136,31 +136,22 @@ void UOpenAICallChat::Activate()
 						if (!JsonChunks.IsEmpty() && Streaming.IsBound())
 						{
 							auto Chunk = JsonChunks.Last();
-							auto Choices = Chunk->GetArrayField(TEXT("choices"));
-							if (Choices.Num() > 0)
+
+							FChatCompletion Completion = MessageFromJsonChunk(Chunk);
+
+							bool bDidFinish = !Completion.finishReason.IsEmpty();
+							
+
+							if (bDidFinish)
 							{
-								FChatLog ChatDelta;
+								//Loop over every chunk and re-assemble the whole message for final broadcast
+								Completion.message.content = FullMessageFromJsonChunks(JsonChunks);
 
-								auto Delta = Choices[0]->AsObject()->GetObjectField(TEXT("delta"));
-								const FString RoleString = Delta->GetStringField(TEXT("role"));
-								if (RoleString.Equals(TEXT("assistant")))
-								{
-									ChatDelta.role = EOAChatRole::ASSISTANT;
-								}
-								else if (RoleString.Equals(TEXT("user")))
-								{
-									ChatDelta.role = EOAChatRole::USER;
-								}
-								else
-								{
-									ChatDelta.role = EOAChatRole::SYSTEM;
-								}
-								ChatDelta.content = Delta->GetStringField(TEXT("content"));
-
-								FChatCompletion Completion;
-								Completion.message = ChatDelta;
-
-								Streaming.Broadcast(Completion,"", true);
+								Finished.Broadcast(Completion, "", true);
+							}
+							else
+							{
+								Streaming.Broadcast(Completion, "", true);
 							}
 						}
 					}
@@ -262,5 +253,65 @@ TSharedPtr<FJsonObject> UOpenAICallChat::ProcessLastChunkStringFromStream(const 
 	}
 
 	return DeltaJson;
+}
+
+FChatCompletion UOpenAICallChat::MessageFromJsonChunk(TSharedPtr<FJsonObject> Chunk)
+{
+	FChatCompletion Completion;
+
+	if (!Chunk) 
+	{
+		return Completion;
+	}
+
+	auto Choices = Chunk->GetArrayField(TEXT("choices"));
+
+	if (Choices.Num() > 0)
+	{
+		FChatLog ChatDelta;
+		TSharedPtr<FJsonObject> Choice = Choices[0]->AsObject();
+
+		TSharedPtr<FJsonObject> Delta = Choice->GetObjectField(TEXT("delta"));
+		FString FinishReason;
+		bool bDidFinish = Choice->TryGetStringField(TEXT("finish_reason"), FinishReason);
+
+		FString RoleString;
+		bool bDidFindRole = Delta->TryGetStringField(TEXT("role"), RoleString);
+
+		if (!bDidFindRole)
+		{
+			RoleString = TEXT("assistant");
+		}
+
+		if (RoleString.Equals(TEXT("assistant")))
+		{
+			ChatDelta.role = EOAChatRole::ASSISTANT;
+		}
+		else if (RoleString.Equals(TEXT("user")))
+		{
+			ChatDelta.role = EOAChatRole::USER;
+		}
+		else
+		{
+			ChatDelta.role = EOAChatRole::SYSTEM;
+		}
+		ChatDelta.content = Delta->GetStringField(TEXT("content"));
+
+		Completion.message = ChatDelta;
+		Completion.finishReason = FinishReason;
+
+	}
+	return Completion;
+}
+
+FString UOpenAICallChat::FullMessageFromJsonChunks(TArray<TSharedPtr<FJsonObject>> JsonChunks)
+{
+	FString FullMessage;
+
+	for (auto Chunk : JsonChunks)
+	{
+		FullMessage += MessageFromJsonChunk(Chunk).message.content;
+	}
+	return FullMessage;
 }
 

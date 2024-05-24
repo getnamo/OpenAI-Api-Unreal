@@ -44,4 +44,6 @@ private:
 
 	TArray<TSharedPtr<FJsonObject>> ProcessStreamChunkString(const FString& Chunk);
 	TSharedPtr<FJsonObject> ProcessLastChunkStringFromStream(const FString& Chunk);
+	FChatCompletion MessageFromJsonChunk(TSharedPtr<FJsonObject> Chunk);
+	FString FullMessageFromJsonChunks(TArray<TSharedPtr<FJsonObject>> JsonChunks);
 };
