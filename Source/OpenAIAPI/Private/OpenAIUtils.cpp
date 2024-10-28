@@ -61,6 +61,7 @@ FString UOpenAIUtils::GetEnvironmentVariable(FString key)
 
 float UOpenAIUtils::HDVectorDotProductSIMD(const FHighDimensionalVector& A, const FHighDimensionalVector& B)
 {
+#if PLATFORM_WINDOWS
 	check(A.Components.Num() == B.Components.Num());
 	// To utilize SIMD acceleration, the dimensionality of high-dimensional vectors needs to be a multiple of 4.
 	check(A.Components.Num() % 4 == 0);
@@ -77,6 +78,9 @@ float UOpenAIUtils::HDVectorDotProductSIMD(const FHighDimensionalVector& A, cons
 	float Result[4];
 	_mm_storeu_ps(Result, Sum);
 	return Result[0] + Result[1] + Result[2] + Result[3];
+#else
+	return 0.f;
+#endif
 }
 
 float UOpenAIUtils::HDVectorLengthSIMD(const FHighDimensionalVector& Vector)

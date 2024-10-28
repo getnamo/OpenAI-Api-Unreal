@@ -242,7 +242,7 @@ TSharedPtr<FJsonObject> UOpenAICallChat::ProcessLastChunkStringFromStream(const 
 
 		if (!Line.StartsWith(TEXT("data:")))
 		{
-			DeltaJson;
+			return DeltaJson;
 		}
 		const FString& Parsed = Line.Replace(TEXT("data: "), TEXT("")).TrimStartAndEnd();
 
