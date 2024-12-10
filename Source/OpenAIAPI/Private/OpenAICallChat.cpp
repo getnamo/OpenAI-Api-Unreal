@@ -121,7 +121,7 @@ void UOpenAICallChat::Activate()
 
 			if (ChatSettings.stream)
 			{
-				HttpRequest->OnRequestProgress().BindLambda([this](FHttpRequestPtr HttpRequest, int32 BytesSend, int32 InBytesReceived)
+				HttpRequest->OnRequestProgress64().BindLambda([this](FHttpRequestPtr HttpRequest, uint64 BytesSend, uint64 InBytesReceived)
 				{
 					FHttpResponsePtr HttpResponse = HttpRequest->GetResponse();
 

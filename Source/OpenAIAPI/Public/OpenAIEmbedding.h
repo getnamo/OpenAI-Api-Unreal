@@ -50,7 +50,7 @@ public:
 	static UOpenAIEmbedding* Embedding(const FEmbeddingSettings& EmbeddingSettings, TFunction<void(const FEmbeddingResult& Result, const FString& ErrorMessage, bool Success)> Callback);
 
 private:
-	void HandleRequestProgress(FHttpRequestPtr Request, int32 BytesSent, int32 BytesReceived);
+	void HandleRequestProgress(FHttpRequestPtr Request, uint64 BytesSent, uint64 BytesReceived);
 
 private:
 	TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> CurrentRequest;
