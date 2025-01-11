@@ -35,7 +35,7 @@ public:
 	FOnResponseRecievedPin Streaming;
 
 private:
-	FString TokenBuffer; // Buffer to accumulate tokens
+	int32 LastEmittedIndex = 0;
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"), Category = "OpenAI")
 	static UOpenAICallChat* OpenAICallChat(FChatSettings ChatSettings);

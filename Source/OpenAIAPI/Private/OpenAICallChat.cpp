@@ -132,30 +132,35 @@ void UOpenAICallChat::Activate()
 
 						if (!JsonChunks.IsEmpty())
 						{
-							for (const auto& Chunk : JsonChunks)
+							//Check if we finished
+							FChatCompletion Completion = MessageFromJsonChunk(JsonChunks.Last());
+							bool bDidFinish = !Completion.finishReason.IsEmpty();
+
+							if (bDidFinish)
 							{
-								FChatCompletion Completion = MessageFromJsonChunk(Chunk);
+								Completion.message.content = FullMessageFromJsonChunks(JsonChunks);
+								Finished.Broadcast(Completion, "", true);
+							}
+							//Stream since last emit
+							else if (Streaming.IsBound())
+							{
+								//Grab all chunks from last emitted index
+								int32 Start = LastEmittedIndex;
+								FString Delta;
 
-								// Accumulate tokens in the instance-level buffer
-								TokenBuffer += Completion.message.content;
-
-								bool bDidFinish = !Completion.finishReason.IsEmpty();
-								if (bDidFinish)
+								for (int32 i = Start; i < JsonChunks.Num(); i++)
 								{
-									// Final message broadcast with accumulated tokens
-									Completion.message.content = TokenBuffer;
-									TokenBuffer.Empty(); // Clear the buffer after final message
-
-									Finished.Broadcast(Completion, "", true);
+									auto Chunk = JsonChunks[i];
+									FChatCompletion PartialCompletion = MessageFromJsonChunk(Chunk);
+									Delta += PartialCompletion.message.content;
 								}
-								else
-								{
-									// Stream accumulated content
-									FChatCompletion StreamingCompletion = Completion;
-									StreamingCompletion.message.content = TokenBuffer;
 
-									Streaming.Broadcast(StreamingCompletion, "", true);
-								}
+								LastEmittedIndex = JsonChunks.Num();
+
+								//change content
+								Completion.message.content = Delta;
+
+								Streaming.Broadcast(Completion, "", true);
 							}
 						}
 					}
