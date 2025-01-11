@@ -165,7 +165,7 @@ void UOpenAICallCompletions::OnResponse(FHttpRequestPtr Request, FHttpResponsePt
 	
 	if (FJsonSerializer::Deserialize(reader, responseObject))
 	{
-		bool err = responseObject->HasField("error");
+		bool err = responseObject->HasField(TEXT("error"));
 
 		if (err)
 		{

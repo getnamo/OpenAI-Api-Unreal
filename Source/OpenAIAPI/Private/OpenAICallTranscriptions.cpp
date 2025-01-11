@@ -106,7 +106,7 @@ void UOpenAICallTranscriptions::OnResponse(FHttpRequestPtr Request, FHttpRespons
 	if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 	{
 		FString TextValue;
-		if (JsonObject->TryGetStringField("text", TextValue))
+		if (JsonObject->TryGetStringField(TEXT("text"), TextValue))
 		{
 			UE_LOG(LogTemp, Log, TEXT("Extracted text: %s"), *TextValue);
 		}

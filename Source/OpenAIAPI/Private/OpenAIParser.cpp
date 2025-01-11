@@ -43,10 +43,10 @@ FCompletionInfo OpenAIParser::ParseGPTCompletionInfo(const FJsonObject& json)
 {
 	FCompletionInfo res = {};
 
-	res.id = json.GetStringField("id");
-	res.object = json.GetStringField("object");
-	res.created = FDateTime::FromUnixTimestamp(json.GetNumberField("created"));
-	res.model = json.GetStringField("model");
+	res.id = json.GetStringField(TEXT("id"));
+	res.object = json.GetStringField(TEXT("object"));
+	res.created = FDateTime::FromUnixTimestamp(json.GetNumberField(TEXT("created")));
+	res.model = json.GetStringField(TEXT("model"));
 
 	return res;
 }
@@ -58,10 +58,10 @@ FChatCompletion OpenAIParser::ParseChatCompletion(const FJsonObject& json)
 
 	FChatLog message;
 	message.role = EOAChatRole::ASSISTANT;
-	TArray<TSharedPtr<FJsonValue>> choices = json.GetArrayField("choices");
+	TArray<TSharedPtr<FJsonValue>> choices = json.GetArrayField(TEXT("choices"));
 	TSharedPtr<FJsonValue> choice = choices[0];
-	TSharedPtr<FJsonObject> messageObject = choice->AsObject()->GetObjectField("message");
-	message.content = messageObject->GetStringField("content");
+	TSharedPtr<FJsonObject> messageObject = choice->AsObject()->GetObjectField(TEXT("message"));
+	message.content = messageObject->GetStringField(TEXT("content"));
 	//res.index = json.GetIntegerField(TEXT("index"));
 	json.TryGetStringField(TEXT("finish_reason"), res.finishReason);
 	res.message = message;
@@ -124,7 +124,7 @@ The audio file content.
 
 FString OpenAIParser::ParseTranscriptionCompletion(const FJsonObject& json)
 {
-	return json.GetStringField("text");
+	return json.GetStringField(TEXT("text"));
 }
 
 // parses a single Generated Image.

@@ -116,7 +116,7 @@ void UOpenAICallDALLE::OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Resp
 	if (FJsonSerializer::Deserialize(reader, responseObject))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s"), *Response->GetContentAsString());
-		bool err = responseObject->HasField("error");
+		bool err = responseObject->HasField(TEXT("error"));
 		
 		if (err)
 		{

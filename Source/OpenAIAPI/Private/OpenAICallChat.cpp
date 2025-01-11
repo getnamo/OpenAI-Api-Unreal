@@ -114,6 +114,7 @@ void UOpenAICallChat::Activate()
 		// commit request
 		HttpRequest->SetVerb(TEXT("POST"));
 		HttpRequest->SetContentAsString(Payload);
+		int32 ProcessedChunks = 0;
 
 		if (HttpRequest->ProcessRequest())
 		{
@@ -121,37 +122,40 @@ void UOpenAICallChat::Activate()
 
 			if (ChatSettings.stream)
 			{
-				HttpRequest->OnRequestProgress64().BindLambda([this](FHttpRequestPtr HttpRequest, uint64 BytesSend, uint64 InBytesReceived)
+				HttpRequest->OnRequestProgress64().BindLambda([this](FHttpRequestPtr HttpRequest, uint64 BytesSent, uint64 InBytesReceived)
 				{
 					FHttpResponsePtr HttpResponse = HttpRequest->GetResponse();
-
 					if (HttpResponse.IsValid())
 					{
 						FString Content = *HttpResponse->GetContentAsString();
-
-						//NB: this has some performance implications because it processes all chunks for every delta received.
-						//Todo: process only last string...
 						TArray<TSharedPtr<FJsonObject>> JsonChunks = ProcessStreamChunkString(Content);
 
-						if (!JsonChunks.IsEmpty() && Streaming.IsBound())
+						if (!JsonChunks.IsEmpty())
 						{
-							auto Chunk = JsonChunks.Last();
-
-							FChatCompletion Completion = MessageFromJsonChunk(Chunk);
-
-							bool bDidFinish = !Completion.finishReason.IsEmpty();
-							
-
-							if (bDidFinish)
+							for (const auto& Chunk : JsonChunks)
 							{
-								//Loop over every chunk and re-assemble the whole message for final broadcast
-								Completion.message.content = FullMessageFromJsonChunks(JsonChunks);
+								FChatCompletion Completion = MessageFromJsonChunk(Chunk);
 
-								Finished.Broadcast(Completion, "", true);
-							}
-							else
-							{
-								Streaming.Broadcast(Completion, "", true);
+								// Accumulate tokens in the instance-level buffer
+								TokenBuffer += Completion.message.content;
+
+								bool bDidFinish = !Completion.finishReason.IsEmpty();
+								if (bDidFinish)
+								{
+									// Final message broadcast with accumulated tokens
+									Completion.message.content = TokenBuffer;
+									TokenBuffer.Empty(); // Clear the buffer after final message
+
+									Finished.Broadcast(Completion, "", true);
+								}
+								else
+								{
+									// Stream accumulated content
+									FChatCompletion StreamingCompletion = Completion;
+									StreamingCompletion.message.content = TokenBuffer;
+
+									Streaming.Broadcast(StreamingCompletion, "", true);
+								}
 							}
 						}
 					}
@@ -183,7 +187,7 @@ void UOpenAICallChat::OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Respo
 	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 	if (FJsonSerializer::Deserialize(Reader, ResponseObject))
 	{
-		bool Err = ResponseObject->HasField("error");
+		bool Err = ResponseObject->HasField(TEXT("error"));
 
 		if (Err)
 		{
