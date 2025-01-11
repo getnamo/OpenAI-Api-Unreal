@@ -1,13 +1,13 @@
 # OpenAI API Plugin
-The **OpenAIApi Plugin** gives you access to the **OpenAI API** in **Unreal Engine**. It is compatible with 4.26, 4.27, 5.0, 5.1, 5.2, and 5.3
+The **OpenAIApi Plugin** gives you access to the **OpenAI API** in **Unreal Engine**.
 
 This is a community Plugin. No affiliation with OpenAI
 
 ## Getnamo Fork notes
 
-This fork add modifications to support locally running LLMs with OpenAI api compatible endpoints. Use `SetOpenAIAPIEndpoint` function before calling other functions to use that endpoint URL instead of the default OpenAI one.
+This fork adds modifications to support locally running LLMs with OpenAI api compatible endpoints. Use `SetOpenAIAPIEndpoint` function before calling other functions to use that endpoint URL instead of the default OpenAI one.
 
-Also adds streaming implementation for ChatAPI allowing per-token update instead of waiting for full text.
+It also adds the streaming implementation for ChatAPI allowing per-token updates instead of waiting for the full text results.
 
 ## Installation
 
