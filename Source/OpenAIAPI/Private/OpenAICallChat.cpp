@@ -192,11 +192,30 @@ void UOpenAICallChat::OnResponse(FHttpRequestPtr Request, FHttpResponsePtr Respo
 	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 	if (FJsonSerializer::Deserialize(Reader, ResponseObject))
 	{
-		bool Err = ResponseObject->HasField(TEXT("error"));
+		bool bError = ResponseObject->HasField(TEXT("error"));
 
-		if (Err)
+		//look for empty messages error
+		if (!bError)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *Response->GetContentAsString());
+			bool bHasDetail = ResponseObject->HasField(TEXT("detail"));
+			if (bHasDetail)
+			{
+				auto DetailArray = ResponseObject->GetArrayField(TEXT("detail"));
+				if (DetailArray.Num() > 0)
+				{
+					FString DetailType = DetailArray[0]->AsObject()->GetStringField(TEXT("type"));
+					if (DetailType == TEXT("missing"))
+					{
+						bError = true;
+					}
+				}
+			}
+		}
+		
+
+		if (bError)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UOpenAICallChat::OnResponse error: %s"), *Response->GetContentAsString());
 			Finished.Broadcast({}, TEXT("Api error"), false);
 			return;
 		}

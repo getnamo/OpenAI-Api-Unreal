@@ -58,12 +58,16 @@ FChatCompletion OpenAIParser::ParseChatCompletion(const FJsonObject& json)
 
 	FChatLog message;
 	message.role = EOAChatRole::ASSISTANT;
-	TArray<TSharedPtr<FJsonValue>> choices = json.GetArrayField(TEXT("choices"));
-	TSharedPtr<FJsonValue> choice = choices[0];
-	TSharedPtr<FJsonObject> messageObject = choice->AsObject()->GetObjectField(TEXT("message"));
-	message.content = messageObject->GetStringField(TEXT("content"));
-	//res.index = json.GetIntegerField(TEXT("index"));
-	json.TryGetStringField(TEXT("finish_reason"), res.finishReason);
+	if(json.HasField(TEXT("choices")))
+	{
+		TArray<TSharedPtr<FJsonValue>> choices = json.GetArrayField(TEXT("choices"));
+		TSharedPtr<FJsonValue> choice = choices[0];
+		TSharedPtr<FJsonObject> messageObject = choice->AsObject()->GetObjectField(TEXT("message"));
+		message.content = messageObject->GetStringField(TEXT("content"));
+		//res.index = json.GetIntegerField(TEXT("index"));
+		json.TryGetStringField(TEXT("finish_reason"), res.finishReason);
+
+	}
 	res.message = message;
 	
 	return res;
